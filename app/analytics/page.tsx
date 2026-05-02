@@ -6,22 +6,25 @@ export default async function Analytics() {
   const feedback = await prisma.feedback.findMany();
   const brewTags = await prisma.brewTag.findMany({ include: { tag: true } });
 
-  const ratingData: RatingDatum[] = brews.map((brew: { tastedAt: Date; rating: number; brewRatio: number }) => ({
+  const ratingData: RatingDatum[] = (brews as Array<{ tastedAt: Date; rating: number; brewRatio: number }>).map((brew) => ({
     date: brew.tastedAt.toISOString().slice(5, 10),
     rating: brew.rating,
     ratio: brew.brewRatio,
   }));
 
-  const tagCountMap = brewTags.reduce<Record<string, TagCountDatum>>((acc, brewTag: { tag: { name: string } }) => {
-    const key = brewTag.tag.name;
-    const current = acc[key] ?? { name: key, count: 0 };
-    acc[key] = { ...current, count: current.count + 1 };
-    return acc;
-  }, {});
+  const tagCountMap = (brewTags as Array<{ tag: { name: string } }>).reduce(
+    (acc, brewTag) => {
+      const key = brewTag.tag.name;
+      const current = acc[key] ?? { name: key, count: 0 };
+      acc[key] = { ...current, count: current.count + 1 };
+      return acc;
+    },
+    {} as Record<string, TagCountDatum>,
+  );
 
-  const feedbackData: FeedbackDatum[] = ['better', 'same', 'worse'].map((name: string) => ({
+  const feedbackData: FeedbackDatum[] = ['better', 'same', 'worse'].map((name) => ({
     name,
-    value: feedback.filter((entry: { value: string }) => entry.value === name).length,
+    value: (feedback as Array<{ value: string }>).filter((entry) => entry.value === name).length,
   }));
 
   return (
