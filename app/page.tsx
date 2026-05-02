@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { hasDatabaseUrl } from '@/lib/db-guard';
 
 type DashboardBrew = {
   id: string;
@@ -14,8 +13,7 @@ export default async function Page() {
   let brews: DashboardBrew[] = [];
   let dbError: string | null = null;
 
-  if (hasDatabaseUrl()) {
-    try {
+  try {
       brews = (await prisma.brew.findMany({
         take: 10,
         orderBy: { tastedAt: 'desc' },
@@ -23,9 +21,6 @@ export default async function Page() {
     } catch {
       dbError = 'Database is not reachable. Check DATABASE_URL and migrations.';
     }
-  } else {
-    dbError = 'DATABASE_URL is not configured.';
-  }
 
   return (
     <main className="space-y-4">
