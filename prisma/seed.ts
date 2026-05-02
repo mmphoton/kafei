@@ -1,10 +1,52 @@
 import { PrismaClient } from '@prisma/client';
 import { tagGroups } from '../lib/constants';
-const prisma=new PrismaClient();
-async function main(){
-  const grinders=[['1Zpresso J-Max',80,220,'clicks','lower=finer','External burr hand grinder'],['Comandante C40',10,40,'clicks','lower=finer','Use Red Clix if available'],['Timemore C2/C3',6,30,'clicks','lower=finer','Starter hand grinder'],['Fellow Ode',1,11,'dial','lower=finer','Flat burr electric'],['Baratza Encore / Encore ESP',1,40,'dial','lower=finer','Conical burr electric'],['Generic stepped grinder',1,60,'step','lower=finer','Customize step scale'],['Generic stepless grinder',0,100,'index','lower=finer','Use marker reference']];
-  for(const g of grinders){await prisma.grinder.upsert({where:{name:g[0]},update:{},create:{name:g[0],minSetting:g[1] as number,maxSetting:g[2] as number,unit:g[3] as string,finerDirection:g[4] as string,helperText:g[5] as string}})}
-  await prisma.coffee.create({data:{name:'Ethiopia Kochere',type:'Washed',origin:'Ethiopia',roastLevel:'Light'}});
-  for(const [k,v] of Object.entries(tagGroups)) for(const t of v){await prisma.tasteTag.upsert({where:{name:t},update:{},create:{name:t,groupName:k}})}
+
+const prisma = new PrismaClient();
+
+type GrinderSeed = {
+  name: string;
+  minSetting: number;
+  maxSetting: number;
+  unit: string;
+  finerDirection: string;
+  helperText: string;
+};
+
+const grinders: GrinderSeed[] = [
+  { name: '1Zpresso J-Max', minSetting: 80, maxSetting: 220, unit: 'clicks', finerDirection: 'lower=finer', helperText: 'External burr hand grinder' },
+  { name: 'Comandante C40', minSetting: 10, maxSetting: 40, unit: 'clicks', finerDirection: 'lower=finer', helperText: 'Use Red Clix if available' },
+  { name: 'Timemore C2/C3', minSetting: 6, maxSetting: 30, unit: 'clicks', finerDirection: 'lower=finer', helperText: 'Starter hand grinder' },
+  { name: 'Fellow Ode', minSetting: 1, maxSetting: 11, unit: 'dial', finerDirection: 'lower=finer', helperText: 'Flat burr electric' },
+  { name: 'Baratza Encore / Encore ESP', minSetting: 1, maxSetting: 40, unit: 'dial', finerDirection: 'lower=finer', helperText: 'Conical burr electric' },
+  { name: 'Generic stepped grinder', minSetting: 1, maxSetting: 60, unit: 'step', finerDirection: 'lower=finer', helperText: 'Customize step scale' },
+  { name: 'Generic stepless grinder', minSetting: 0, maxSetting: 100, unit: 'index', finerDirection: 'lower=finer', helperText: 'Use marker reference' },
+];
+
+async function main() {
+  for (const grinder of grinders) {
+    await prisma.grinder.upsert({
+      where: { name: grinder.name },
+      update: {},
+      create: grinder,
+    });
+  }
+
+  const existingCoffee = await prisma.coffee.findFirst({ where: { name: 'Ethiopia Kochere' } });
+  if (!existingCoffee) {
+    await prisma.coffee.create({
+      data: { name: 'Ethiopia Kochere', type: 'Washed', origin: 'Ethiopia', roastLevel: 'Light' },
+    });
+  }
+
+  for (const [groupName, tags] of Object.entries(tagGroups)) {
+    for (const tagName of tags) {
+      await prisma.tasteTag.upsert({
+        where: { name: tagName },
+        update: {},
+        create: { name: tagName, groupName },
+      });
+    }
+  }
 }
-main().finally(()=>prisma.$disconnect());
+
+main().finally(() => prisma.$disconnect());

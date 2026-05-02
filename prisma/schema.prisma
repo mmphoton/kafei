@@ -1,84 +1,103 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "sqlite" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
 
 model Coffee {
-  id String @id @default(cuid())
-  name String
-  type String?
-  origin String?
+  id         String   @id @default(cuid())
+  name       String
+  type       String?
+  origin     String?
   roastLevel String?
-  brews Brew[]
-  createdAt DateTime @default(now())
+  brews      Brew[]
+  createdAt  DateTime @default(now())
 }
+
 model Grinder {
-  id String @id @default(cuid())
-  name String
-  minSetting Float
-  maxSetting Float
-  unit String
+  id             String @id @default(cuid())
+  name           String @unique
+  minSetting     Float
+  maxSetting     Float
+  unit           String
   finerDirection String
-  helperText String
-  isCustom Boolean @default(false)
-  brews Brew[]
+  helperText     String
+  isCustom       Boolean @default(false)
+  brews          Brew[]
 }
+
 model Brew {
-  id String @id @default(cuid())
-  coffeeId String
-  grinderId String
-  coffee Coffee @relation(fields:[coffeeId], references:[id])
-  grinder Grinder @relation(fields:[grinderId], references:[id])
-  brewMethod String
-  grinderSetting Float
-  doseG Float
-  beverageOutputG Float
-  waterInputG Float
-  brewRatio Float
-  waterTempC Float
-  brewTimeSec Int
-  tastingNotes String?
-  customAdjectives String?
-  rating Int
-  notes String?
-  tastedAt DateTime @default(now())
+  id                     String @id @default(cuid())
+  coffeeId               String
+  grinderId              String
+  coffee                 Coffee @relation(fields: [coffeeId], references: [id])
+  grinder                Grinder @relation(fields: [grinderId], references: [id])
+  brewMethod             String
+  grinderSetting         Float
+  doseG                  Float
+  beverageOutputG        Float
+  waterInputG            Float
+  brewRatio              Float
+  waterTempC             Float
+  brewTimeSec            Int
+  tastingNotes           String?
+  customAdjectives       String?
+  rating                 Int
+  notes                  String?
+  tastedAt               DateTime @default(now())
   followedPreviousAdvice Boolean @default(false)
-  previousBrewId String?
-  x Float
-  y Float
-  recommendations Recommendation[]
-  feedbackGiven Feedback[] @relation("current")
-  feedbackFromNext Feedback[] @relation("previous")
+  previousBrewId         String?
+  x                      Float
+  y                      Float
+  recommendations        Recommendation[]
+  feedbackGiven          Feedback[] @relation("current")
+  feedbackFromNext       Feedback[] @relation("previous")
+  tags                   BrewTag[]
 }
-model TasteTag { id String @id @default(cuid()) name String @unique groupName String }
+
+model TasteTag {
+  id        String @id @default(cuid())
+  name      String @unique
+  groupName String
+  brews     BrewTag[]
+}
+
 model BrewTag {
   brewId String
-  tagId String
-  brew Brew @relation(fields:[brewId],references:[id])
-  tag TasteTag @relation(fields:[tagId],references:[id])
+  tagId  String
+  brew   Brew @relation(fields: [brewId], references: [id])
+  tag    TasteTag @relation(fields: [tagId], references: [id])
+
   @@id([brewId, tagId])
 }
+
 model Recommendation {
-  id String @id @default(cuid())
-  brewId String
-  brew Brew @relation(fields:[brewId], references:[id])
-  variable String
-  direction String
-  stepSize String
-  reasoning String
+  id               String @id @default(cuid())
+  brewId           String
+  brew             Brew @relation(fields: [brewId], references: [id])
+  variable         String
+  direction        String
+  stepSize         String
+  reasoning        String
   expectedMovement String
-  ruleKey String
-  createdAt DateTime @default(now())
-  feedback Feedback[]
+  ruleKey          String
+  createdAt        DateTime @default(now())
+  feedback         Feedback[]
 }
+
 model Feedback {
-  id String @id @default(cuid())
-  currentBrewId String
-  previousBrewId String
+  id               String @id @default(cuid())
+  currentBrewId    String
+  previousBrewId   String
   recommendationId String?
-  currentBrew Brew @relation("current", fields:[currentBrewId], references:[id])
-  previousBrew Brew @relation("previous", fields:[previousBrewId], references:[id])
-  recommendation Recommendation? @relation(fields:[recommendationId], references:[id])
-  value String
-  followedStatus String
-  note String?
-  createdAt DateTime @default(now())
+  currentBrew      Brew @relation("current", fields: [currentBrewId], references: [id])
+  previousBrew     Brew @relation("previous", fields: [previousBrewId], references: [id])
+  recommendation   Recommendation? @relation(fields: [recommendationId], references: [id])
+  value            String
+  followedStatus   String
+  note             String?
+  createdAt        DateTime @default(now())
 }

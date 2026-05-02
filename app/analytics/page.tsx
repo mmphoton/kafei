@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import { RatingChart, TagChart, FeedbackChart, RatioScatter, type FeedbackDatum, type RatingDatum, type TagCountDatum } from '@/components/charts';
 
