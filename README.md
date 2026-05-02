@@ -1,4 +1,4 @@
-# Kafei - Coffee Brewing Log
+# Kafei - Coffee Brewing Log - TEST
 
 Production-ready Next.js 15 App Router app for brew tracking, deterministic recommendations, and feedback analytics.
 
